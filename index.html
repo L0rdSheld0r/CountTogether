@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      background: transparent;
+      color: white;
+      font-size: 80px;
+      font-family: Arial;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="counter">Loading...</div>
+
+  <script>
+    async function fetchCounter() {
+      const res = await fetch("https://raw.githubusercontent.com/L0rdSheld0r/CountTogether/refs/heads/main/counter.html");
+      const text = await res.text();
+      document.getElementById("counter").innerText = text;
+    }
+
+    fetchCounter();
+    setInterval(fetchCounter, 5000);
+  </script>
+</body>
+</html>
