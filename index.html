@@ -1,6 +1,9 @@
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
+<title>OBS Counter</title>
+
 <style>
   body {
     margin: 0;
@@ -20,24 +23,34 @@
   }
 </style>
 </head>
+
 <body>
 
 <div id="counter">0</div>
 
 <script>
-const COUNTER_URL = "https://raw.githubusercontent.com/L0rdSheld0r/CountTogether/refs/heads/main/counter.txt";
+const COUNTER_URL = "https://cdn.jsdelivr.net/gh/L0rdSheld0r/CountTogether@main/counter.txt";
 
 async function fetchCounter() {
   try {
     const response = await fetch(COUNTER_URL + "?t=" + new Date().getTime());
+    
+    if (!response.ok) {
+      throw new Error("Network response was not ok");
+    }
+
     const text = await response.text();
     document.getElementById("counter").innerText = text.trim();
-  } catch (err) {
-    console.error(err);
+
+  } catch (error) {
+    console.error("Fehler beim Laden:", error);
   }
 }
 
+// Initial laden
 fetchCounter();
+
+// Alle 3 Sekunden aktualisieren
 setInterval(fetchCounter, 3000);
 </script>
 
