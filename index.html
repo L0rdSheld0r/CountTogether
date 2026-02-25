@@ -17,7 +17,7 @@
 
   <script>
     async function fetchCounter() {
-      const res = await fetch("https://raw.githubusercontent.com/L0rdSheld0r/CountTogether/refs/heads/main/counter.html");
+      const res = await fetch("https://raw.githubusercontent.com/L0rdSheld0r/CountTogether/refs/heads/main/counter.txt");
       const text = await res.text();
       document.getElementById("counter").innerText = text;
     }
