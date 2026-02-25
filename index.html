@@ -1,29 +1,45 @@
-<!DOCTYPE html>
 <html>
 <head>
-  <style>
-    body {
-      margin: 0;
-      background: transparent;
-      color: white;
-      font-size: 80px;
-      font-family: Arial;
-      text-align: center;
-    }
-  </style>
+<meta charset="UTF-8">
+<style>
+  body {
+    margin: 0;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+  }
+
+  #counter {
+    font-size: 120px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 20px rgba(0,0,0,0.7);
+  }
+</style>
 </head>
 <body>
-  <div id="counter">Loading...</div>
 
-  <script>
-    async function fetchCounter() {
-      const res = await fetch("https://raw.githubusercontent.com/L0rdSheld0r/CountTogether/refs/heads/main/counter.txt");
-      const text = await res.text();
-      document.getElementById("counter").innerText = text;
-    }
+<div id="counter">0</div>
 
-    fetchCounter();
-    setInterval(fetchCounter, 5000);
-  </script>
+<script>
+const COUNTER_URL = "https://raw.githubusercontent.com/L0rdSheld0r/CountTogether/refs/heads/main/counter.txt";
+
+async function fetchCounter() {
+  try {
+    const response = await fetch(COUNTER_URL + "?t=" + new Date().getTime());
+    const text = await response.text();
+    document.getElementById("counter").innerText = text.trim();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+fetchCounter();
+setInterval(fetchCounter, 3000);
+</script>
+
 </body>
 </html>
