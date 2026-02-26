@@ -29,28 +29,20 @@
 <div id="counter">0</div>
 
 <script>
-const COUNTER_URL = "https://cdn.jsdelivr.net/gh/L0rdSheld0r/CountTogether@main/counter.txt";
+const COUNTER_URL = "https://api.github.com/repos/L0rdSheld0r/CountTogether/counter.txt";
 
 async function fetchCounter() {
   try {
-    const response = await fetch(COUNTER_URL + "?t=" + new Date().getTime());
-    
-    if (!response.ok) {
-      throw new Error("Network response was not ok");
-    }
-
-    const text = await response.text();
-    document.getElementById("counter").innerText = text.trim();
-
+    const response = await fetch(COUNTER_URL);
+    const data = await response.json();
+    const decoded = atob(data.content);
+    document.getElementById("counter").innerText = decoded.trim();
   } catch (error) {
-    console.error("Fehler beim Laden:", error);
+    console.error("Fehler:", error);
   }
 }
 
-// Initial laden
 fetchCounter();
-
-// Alle 3 Sekunden aktualisieren
 setInterval(fetchCounter, 3000);
 </script>
 
