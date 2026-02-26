@@ -29,22 +29,24 @@
 <div id="counter">0</div>
 
 <script>
-const COUNTER_URL = "https://api.github.com/repos/L0rdSheld0r/CountTogether/contents/counter.txt";
+const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQUMnuQ7Ow_vDxodnj0__UJnjuz13q6fztb8MMQN9xGADAJvTTeKPJ_Z1fGm69ah4eOsvGerjroJSry/pub?gid=0&single=true&output=csv";
 
 async function fetchCounter() {
   try {
-    const response = await fetch(COUNTER_URL);
-    const data = await response.json();
-    const decoded = atob(data.content);
-    document.getElementById("counter").innerText = decoded.trim();
+    const response = await fetch(SHEET_URL + "&t=" + new Date().getTime());
+    const text = await response.text();
+
+    // CSV first cell
+    const value = text.split(",")[0].trim();
+    document.getElementById("counter").innerText = value;
+
   } catch (error) {
-    console.error("Fehler:", error);
+    console.error("Error loading sheet:", error);
   }
 }
 
 fetchCounter();
-setInterval(fetchCounter, 3000);
+setInterval(fetchCounter, 2000);
 </script>
-
 </body>
 </html>
