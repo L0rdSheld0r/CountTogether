@@ -8,22 +8,21 @@
   body {
     margin: 0;
     background: transparent;
-    height: 100vh;
-    display: flex;
-    justify-content: flex-end;   /* rechts im OBS */
-    align-items: center;         /* vertikal mittig */
     font-family: Arial, sans-serif;
   }
   
-  /* Container */
+  /* Container rechtsbündig */
   #anzeige {
-    display: flex;               /* nebeneinander */
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;   /* rechts */
     align-items: center;
-    justify-content: flex-end;   /* Inhalt rechtsbündig */
-    gap: 20px;                   /* Abstand zwischen Zahlen */
+    gap: 15px;
+    padding-right: 20px;         /* Abstand vom Rand */
+    height: 100vh;
   }
   
-  /* Alle 3 gleich stylen */
+  /* Text */
   #counter,
   #slash,
   #goal {
@@ -31,7 +30,8 @@
     font-weight: bold;
     color: white;
     text-shadow: 0 0 20px rgba(0,0,0,0.7);
-  }
+    white-space: nowrap; /* verhindert Umbruch */
+}
 </style>
 </head>
 
