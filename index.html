@@ -85,6 +85,10 @@ function updateCounter(newValue) {
   if (!animatingCounter) {
     animateCounter();
   }
+
+  if (currentCounter>=currentGoal) {
+    fetchGoal();
+  }
 }
 
 function animateGoal() {
