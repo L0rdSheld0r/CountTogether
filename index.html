@@ -21,12 +21,24 @@
     color: white;
     text-shadow: 0 0 20px rgba(0,0,0,0.7);
   }
+  #slash {
+    font-size: 120px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 20px rgba(0,0,0,0.7);
+  }
+  #goal {
+    font-size: 120px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 20px rgba(0,0,0,0.7);
+  }
 </style>
 </head>
 
 <body>
 
-<div id="counter"></div>
+<div id="anzeige"><div id="counter"></div><div id="slash">/</div><div id="goal"></div></div>
 
 <script>
 const SHEET_ID = "1qE6LIMwBBoqZOoWxmUrwmM9LTrcDhr2vRBnWWVBehqM";
@@ -35,43 +47,79 @@ const SHEET_NAME = "CountTogether_Test"; // Falls dein Tab anders heißt, anpass
 const SHEET_URL =
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
-let currentValue = 0;
-let targetValue = 0;
-let animating = false;
+let currentCounter = 0;
+let targetCounter = 0;
+let currentGoal = 0;
+let targetGoal = 0;
+let animatingCounter = false;
+let animatingGoal = false;
 
 function animateCounter() {
-  if (currentValue === targetValue) {
-    animating = false;
+  if (currentCounter === targetCounter) {
+    animatingCounter = false;
     return;
   }
 
-  animating = true;
+  animatingCounter = true;
 
-  const difference = targetValue - currentValue;
+  const difference = targetCounter - currentCounter;
   const step = Math.ceil(Math.abs(difference) / 20); // speed control
 
-  currentValue += difference > 0 ? step : -step;
+  currentCounter += difference > 0 ? step : -step;
 
-  if ((difference > 0 && currentValue > targetValue) ||
-      (difference < 0 && currentValue < targetValue)) {
-    currentValue = targetValue;
+  if ((difference > 0 && currentCounter > targetCounter) ||
+      (difference < 0 && currentCounter < targetCounter)) {
+    currentCounter = targetCounter;
   }
 
-  document.getElementById("counter").innerText = currentValue;
+  document.getElementById("counter").innerText = currentCounter;
 
   requestAnimationFrame(animateCounter);
 }
 
-function updateDisplay(newValue) {
-  if (newValue === targetValue) return;
+function updateCounter(newValue) {
+  if (newValue === targetCounter) return;
 
-  targetValue = newValue;
+  targetCounter = newValue;
 
-  if (!animating) {
+  if (!animatingCounter) {
     animateCounter();
   }
 }
 
+function animateGoal() {
+  if (currentGoal === targetGoal) {
+    animatingGoal = false;
+    return;
+  }
+
+  animatingGoal = true;
+
+  const difference = targetGoal - currentGoal;
+  const step = Math.ceil(Math.abs(difference) / 20); // speed control
+
+  currentGoal += difference > 0 ? step : -step;
+
+  if ((difference > 0 && currentGoal > targetGoal) ||
+      (difference < 0 && currentGoal < targetGoal)) {
+    currentGoal = targetGoal;
+  }
+
+  document.getElementById("goal").innerText = currentGoal;
+
+  requestAnimationFrame(animateGoal);
+}
+
+function updateGoal(newValue) {
+  if (newValue === targetGoal) return;
+
+  targetGoal = newValue;
+
+  if (!animatingGoal) {
+    animateGoal();
+  }
+}
+  
 async function fetchCounter() {
   try {
     const response = await fetch(SHEET_URL, { cache: "no-store" });
@@ -81,8 +129,24 @@ async function fetchCounter() {
     const cell = json.table.rows[0].c[0];
     const value = cell ? parseInt(cell.v) : 0;
 
-    updateDisplay(value);
+    updateCounter(value);
 
+  } catch (error) {
+    console.error("Sheet Load Error:", error);
+  }
+}
+
+async function fetchGoal() {
+  try {
+    const response = await fetch(SHEET_URL, { cache: "no-store" });
+    const text = await response.text();
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+  
+    const cell = json.table.rows[0].c[1];
+    const value = cell ? parseInt(cell.v) : 0;
+  
+    updateGoal(value);
+  
   } catch (error) {
     console.error("Sheet Load Error:", error);
   }
