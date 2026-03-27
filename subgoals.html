@@ -11,7 +11,6 @@
     font-family: Arial, sans-serif;
   }
 
-  /* Hauptcontainer rechtsbündig */
   #anzeige {
     width: 100%;
     height: 100vh;
@@ -20,42 +19,43 @@
     align-items: center;
   }
 
-  /* Liste */
   #liste {
     height: 90vh;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    padding-right: 40px;
+    padding-right: 30px;
   }
 
-  /* Einzelne Zeile */
   .eintrag {
     display: flex;
     align-items: center;
-    height: calc(90vh / 10); /* genau 10 Einträge */
+    height: calc(90vh / 10);
   }
 
-  /* Zahl (feste Breite = perfekt untereinander) */
   .count {
-    width: 150px;
+    width: 110px;
     text-align: right;
     font-size: 4.5vh;
     font-weight: bold;
     color: white;
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
-    margin-right: 25px;
+    margin-right: 10px;
   }
 
-  /* Beschreibung */
   .text {
-    width: 600px;
+    width: 520px;
     text-align: left;
     font-size: 4.2vh;
     color: white;
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
     white-space: nowrap;
     overflow: hidden;
+  }
+
+  /* Optional: erledigte Ziele leicht grau */
+  .done {
+    opacity: 0.5;
   }
 </style>
 </head>
@@ -84,25 +84,43 @@ async function fetchSubgoals() {
 
     container.innerHTML = "";
 
-    rows.slice(0, 10).forEach(row => {
-      const countCell = row.c[0];
-      const textCell = row.c[1];
+    // Daten aufbereiten
+    let data = rows.map(row => ({
+      count: row.c[0] ? row.c[0].v : "",
+      text: row.c[1] ? row.c[1].v : "",
+      done: row.c[2] ? row.c[2].v : 0
+    }));
 
-      const count = countCell ? countCell.v : "";
-      const description = textCell ? textCell.v : "";
+    // Index vom ersten nicht erfüllten Ziel finden
+    let firstOpenIndex = data.findIndex(item => item.done == 0);
 
-      if (count === "" && description === "") return;
+    // Wenn alles erledigt ist → starte einfach bei 0
+    if (firstOpenIndex === -1) firstOpenIndex = 0;
+
+    // 10 Einträge ab diesem Punkt anzeigen
+    let visible = data.slice(firstOpenIndex, firstOpenIndex + 10);
+
+    // Wenn weniger als 10 → davor wieder auffüllen
+    if (visible.length < 10) {
+      let missing = 10 - visible.length;
+      visible = data.slice(firstOpenIndex - missing, firstOpenIndex).concat(visible);
+    }
+
+    visible.forEach(item => {
+      if (item.count === "" && item.text === "") return;
 
       const eintrag = document.createElement("div");
       eintrag.className = "eintrag";
 
+      if (item.done == 1) eintrag.classList.add("done");
+
       const countDiv = document.createElement("div");
       countDiv.className = "count";
-      countDiv.innerText = count;
+      countDiv.innerText = item.count;
 
       const textDiv = document.createElement("div");
       textDiv.className = "text";
-      textDiv.innerText = description;
+      textDiv.innerText = item.text;
 
       eintrag.appendChild(countDiv);
       eintrag.appendChild(textDiv);
