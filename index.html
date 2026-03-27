@@ -81,7 +81,7 @@ function animateCounter() {
 }
 
 function updateCounter(newValue) {
-  if (newValue === targetCounter) return;
+  if (newValue === targetCounter && currentCounter !== 0) return;
 
   targetCounter = newValue;
 
