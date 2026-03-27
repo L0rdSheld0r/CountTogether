@@ -53,9 +53,14 @@
     overflow: hidden;
   }
 
-  /* Optional: erledigte Ziele leicht grau */
+  /* erledigte Ziele */
   .done {
-    opacity: 0.5;
+    opacity: 0.45;
+  }
+
+  .done .count,
+  .done .text {
+    text-decoration: line-through;
   }
 </style>
 </head>
@@ -84,23 +89,17 @@ async function fetchSubgoals() {
 
     container.innerHTML = "";
 
-    // Daten aufbereiten
     let data = rows.map(row => ({
       count: row.c[0] ? row.c[0].v : "",
       text: row.c[1] ? row.c[1].v : "",
       done: row.c[2] ? row.c[2].v : 0
     }));
 
-    // Index vom ersten nicht erfüllten Ziel finden
     let firstOpenIndex = data.findIndex(item => item.done == 0);
-
-    // Wenn alles erledigt ist → starte einfach bei 0
     if (firstOpenIndex === -1) firstOpenIndex = 0;
 
-    // 10 Einträge ab diesem Punkt anzeigen
     let visible = data.slice(firstOpenIndex, firstOpenIndex + 10);
 
-    // Wenn weniger als 10 → davor wieder auffüllen
     if (visible.length < 10) {
       let missing = 10 - visible.length;
       visible = data.slice(firstOpenIndex - missing, firstOpenIndex).concat(visible);
