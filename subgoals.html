@@ -22,10 +22,11 @@
 
   /* Liste */
   #liste {
+    height: 90vh;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: flex-end;
-    gap: 15px;
     padding-right: 40px;
   }
 
@@ -33,24 +34,25 @@
   .eintrag {
     display: flex;
     align-items: center;
-    gap: 25px;
+    gap: 20px;
+    height: calc(90vh / 10); /* genau 10 Zeilen */
   }
 
   /* Zahl */
   .count {
-    font-size: 100px;
+    font-size: 4.5vh;
     font-weight: bold;
     color: white;
-    text-shadow: 0 0 20px rgba(0,0,0,0.7);
-    min-width: 150px;
+    text-shadow: 0 0 15px rgba(0,0,0,0.7);
+    min-width: 100px;
     text-align: right;
   }
 
   /* Beschreibung */
   .text {
-    font-size: 60px;
+    font-size: 4.2vh;
     color: white;
-    text-shadow: 0 0 20px rgba(0,0,0,0.7);
+    text-shadow: 0 0 15px rgba(0,0,0,0.7);
     white-space: nowrap;
   }
 </style>
@@ -80,7 +82,8 @@ async function fetchSubgoals() {
 
     container.innerHTML = "";
 
-    rows.forEach(row => {
+    // Nur die ersten 10 anzeigen
+    rows.slice(0, 10).forEach(row => {
       const countCell = row.c[0];
       const textCell = row.c[1];
 
@@ -111,10 +114,7 @@ async function fetchSubgoals() {
   }
 }
 
-/* Erste Abfrage direkt */
 fetchSubgoals();
-
-/* Danach alle 10 Sekunden aktualisieren */
 setInterval(fetchSubgoals, 10000);
 </script>
 
