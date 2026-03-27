@@ -75,6 +75,8 @@ const SHEET_ID = "1qE6LIMwBBoqZOoWxmUrwmM9LTrcDhr2vRBnWWVBehqM";
 const SHEET_NAME = "Subgoals";
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
+let firstLoad = true;
+
 async function fetchSubgoals() {
   try {
     const response = await fetch(SHEET_URL, { cache: "no-store" });
@@ -103,24 +105,21 @@ function renderList(data) {
 
   let visible = [];
 
-  if (notDone.length >= 10) {
-    // Mehr als 10 nicht erledigte → nur die ersten 10 offen
-    visible = notDone.slice(0, 10);
+  if (firstLoad) {
+    // Anfang: zeige einfach die ersten 10 Einträge
+    visible = data.slice(0, 10);
+    firstLoad = false;
   } else {
-    // Weniger als 10 offen → letzten erledigten ganz oben + offene + ggf. weitere erledigte
-    const slotsLeft = 10 - notDone.length;
-
-    let topDone = [];
-    if (done.length > 0) {
-      topDone = [done[done.length - 1]]; // letzter erledigter ganz oben
+    if (notDone.length >= 9) {
+      // letzte erledigte oben + 9 offene
+      const lastDone = done.length > 0 ? [done[done.length - 1]] : [];
+      visible = [...lastDone, ...notDone.slice(0, 9)];
+    } else {
+      // weniger als 9 offene -> fülle mit erledigten oberhalb auf
+      const lastDone = done.length > 0 ? done.slice(- (10 - notDone.length)) : [];
+      visible = [...lastDone, ...notDone];
+      visible = visible.slice(-10); // max 10
     }
-
-    const remainingSlots = slotsLeft - topDone.length;
-    const additionalDone = remainingSlots > 0 ? done.slice(0, remainingSlots) : [];
-
-    visible = [...topDone, ...notDone, ...additionalDone];
-    // sicherstellen, dass max 10
-    visible = visible.slice(0, 10);
   }
 
   visible.forEach(item => {
@@ -142,8 +141,9 @@ function renderList(data) {
   });
 }
 
+// Fetch alle 10 Sekunden
 fetchSubgoals();
-setInterval(fetchSubgoals, 10000); // alle 10 Sekunden aktualisieren
+setInterval(fetchSubgoals, 10000);
 </script>
 
 </body>
