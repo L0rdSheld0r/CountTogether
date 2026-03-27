@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OBS Subgoal List v0.7</title>
+<title>OBS Subgoal List v0.8</title>
 
 <style>
   body {
@@ -110,19 +110,19 @@ function renderList(data) {
     visible = data.slice(0, 10);
     firstLoad = false;
   } else {
-    if (notDone.length >= 9) {
-      // Letzter erledigter oben + 9 offene
-      const lastDone = done.length > 0 ? [done[done.length - 1]] : [];
-      visible = [...lastDone, ...notDone.slice(0, 9)];
+    if (notDone.length >= 10 || done.length === 0) {
+        // Kein erledigtes vorhanden oder genug offene → einfach die ersten 10 offenen nehmen
+        visible = notDone.slice(0, 10);
+    } else if (notDone.length >= 9) {
+        // Letzter erledigter oben + 9 offene
+        const lastDone = [done[done.length - 1]];
+        visible = [...lastDone, ...notDone.slice(0, 9)];
     } else {
-      // Weniger als 9 offene → letzten erledigten oben + alle offenen
-      const lastDone = done.length > 0 ? [done[done.length - 1]] : [];
-      const remainingOpen = notDone.slice(0, 9);
-      const additionalDone = done.filter(d => d !== lastDone[0]); // keine Doppelung
-      visible = [...lastDone, ...remainingOpen, ...additionalDone];
-
-      // Maximal 10 Einträge
-      visible = visible.slice(0, 10);
+        // Weniger als 9 offene → letzten erledigten oben + offene + weitere erledigte
+        const lastDone = [done[done.length - 1]];
+        const remainingOpen = notDone.slice(0, 9);
+        const additionalDone = done.filter(d => d !== lastDone[0]);
+        visible = [...lastDone, ...remainingOpen, ...additionalDone].slice(0, 10);
     }
   }
 
