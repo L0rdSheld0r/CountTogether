@@ -104,17 +104,25 @@ function renderList(data) {
   let visible = [];
 
   if (notDone.length >= 10) {
-    // Mehr als 10 nicht erledigte → nur die ersten 10 anzeigen
+    // Mehr als 10 nicht erledigte → nur die ersten 10 offen
     visible = notDone.slice(0, 10);
   } else {
-    // Weniger als 10 offen → offene + erledigte auffüllen, max 10
+    // Weniger als 10 offen → letzten erledigten ganz oben + offene + ggf. weitere erledigte
     const slotsLeft = 10 - notDone.length;
-    // Nimm die letzten `slotsLeft` erledigten Ziele, damit die neuesten sichtbar sind
-    const doneToShow = done.slice(-slotsLeft);
-    visible = notDone.concat(doneToShow);
+
+    let topDone = [];
+    if (done.length > 0) {
+      topDone = [done[done.length - 1]]; // letzter erledigter ganz oben
+    }
+
+    const remainingSlots = slotsLeft - topDone.length;
+    const additionalDone = remainingSlots > 0 ? done.slice(0, remainingSlots) : [];
+
+    visible = [...topDone, ...notDone, ...additionalDone];
+    // sicherstellen, dass max 10
+    visible = visible.slice(0, 10);
   }
 
-  // Füge Einträge ins DOM
   visible.forEach(item => {
     const eintrag = document.createElement("div");
     eintrag.className = "eintrag";
