@@ -20,19 +20,17 @@
     align-items: center;
   }
 
-  /* Scrollbereich */
   #scrollContainer {
     height: 90vh;
     overflow: hidden;
     padding-right: 30px;
   }
 
-  /* Liste */
   #liste {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    transition: transform 1.2s ease;
+    transition: transform 2s ease; /* 2 Sekunden pro Scroll */
   }
 
   .eintrag {
@@ -149,25 +147,38 @@ function renderCurrentView() {
   container.style.transform = "translateY(0px)";
 }
 
+// sanftes Scrollen Zeile für Zeile
 function scrollPreview() {
   const container = document.getElementById("liste");
+  const totalLines = container.children.length;
 
-  const scrollDistance = firstOpenIndex * (window.innerHeight * 0.9 / 10);
+  if (totalLines <= 10) return; // kein Scroll nötig
 
-  // nach oben scrollen
-  container.style.transform = `translateY(${scrollDistance}px)`;
+  let current = 0;
+  const lineHeight = window.innerHeight * 0.9 / 10; // Höhe pro Goal
 
-  // kurz warten und wieder zurück
-  setTimeout(() => {
-    container.style.transform = "translateY(0px)";
-  }, 3500);
+  function stepScroll() {
+    if (current >= totalLines - 10) {
+      // alle durch → kurz stehen, dann zurück
+      setTimeout(() => {
+        container.style.transform = `translateY(0px)`;
+      }, 2000);
+      return;
+    }
+
+    current++;
+    container.style.transform = `translateY(${current * lineHeight}px)`;
+    setTimeout(stepScroll, 2000); // 2 Sekunden pro Schritt
+  }
+
+  stepScroll();
 }
 
 fetchSubgoals();
 setInterval(fetchSubgoals, 10000);
 
-/* Einmal pro Minute Scroll-Preview */
-setInterval(scrollPreview, 60000);
+// Scroll-Preview alle 5 Minuten
+setInterval(scrollPreview, 300000);
 </script>
 
 </body>
