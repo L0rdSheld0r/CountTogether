@@ -25,7 +25,6 @@
     height: 90vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     align-items: flex-end;
     padding-right: 40px;
   }
@@ -34,29 +33,29 @@
   .eintrag {
     display: flex;
     align-items: center;
-    height: calc(90vh / 10);
+    height: calc(90vh / 10); /* genau 10 Einträge */
   }
 
-  /* Beschreibung (feste Breite!) */
-  .text {
-    width: 600px;               /* hier kannst du die Breite ändern */
+  /* Zahl (feste Breite = perfekt untereinander) */
+  .count {
+    width: 150px;
     text-align: right;
+    font-size: 4.5vh;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 15px rgba(0,0,0,0.7);
+    margin-right: 25px;
+  }
+
+  /* Beschreibung */
+  .text {
+    width: 600px;
+    text-align: left;
     font-size: 4.2vh;
     color: white;
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
     white-space: nowrap;
     overflow: hidden;
-  }
-
-  /* Zahl */
-  .count {
-    width: 150px;               /* sorgt dafür, dass alle Zahlen gleich starten */
-    text-align: left;
-    font-size: 4.5vh;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 0 15px rgba(0,0,0,0.7);
-    margin-left: 30px;
   }
 </style>
 </head>
@@ -97,16 +96,16 @@ async function fetchSubgoals() {
       const eintrag = document.createElement("div");
       eintrag.className = "eintrag";
 
-      const textDiv = document.createElement("div");
-      textDiv.className = "text";
-      textDiv.innerText = description;
-
       const countDiv = document.createElement("div");
       countDiv.className = "count";
       countDiv.innerText = count;
 
-      eintrag.appendChild(textDiv);
+      const textDiv = document.createElement("div");
+      textDiv.className = "text";
+      textDiv.innerText = description;
+
       eintrag.appendChild(countDiv);
+      eintrag.appendChild(textDiv);
 
       container.appendChild(eintrag);
     });
