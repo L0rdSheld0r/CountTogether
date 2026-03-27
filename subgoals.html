@@ -34,26 +34,29 @@
   .eintrag {
     display: flex;
     align-items: center;
-    gap: 20px;
-    height: calc(90vh / 10); /* genau 10 Zeilen */
+    height: calc(90vh / 10);
   }
 
-  /* Zahl */
-  .count {
-    font-size: 4.5vh;
-    font-weight: bold;
-    color: white;
-    text-shadow: 0 0 15px rgba(0,0,0,0.7);
-    min-width: 100px;
-    text-align: right;
-  }
-
-  /* Beschreibung */
+  /* Beschreibung (feste Breite!) */
   .text {
+    width: 600px;               /* hier kannst du die Breite ändern */
+    text-align: right;
     font-size: 4.2vh;
     color: white;
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
     white-space: nowrap;
+    overflow: hidden;
+  }
+
+  /* Zahl */
+  .count {
+    width: 150px;               /* sorgt dafür, dass alle Zahlen gleich starten */
+    text-align: left;
+    font-size: 4.5vh;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 15px rgba(0,0,0,0.7);
+    margin-left: 30px;
   }
 </style>
 </head>
@@ -82,7 +85,6 @@ async function fetchSubgoals() {
 
     container.innerHTML = "";
 
-    // Nur die ersten 10 anzeigen
     rows.slice(0, 10).forEach(row => {
       const countCell = row.c[0];
       const textCell = row.c[1];
@@ -95,16 +97,16 @@ async function fetchSubgoals() {
       const eintrag = document.createElement("div");
       eintrag.className = "eintrag";
 
-      const countDiv = document.createElement("div");
-      countDiv.className = "count";
-      countDiv.innerText = count;
-
       const textDiv = document.createElement("div");
       textDiv.className = "text";
       textDiv.innerText = description;
 
-      eintrag.appendChild(countDiv);
+      const countDiv = document.createElement("div");
+      countDiv.className = "count";
+      countDiv.innerText = count;
+
       eintrag.appendChild(textDiv);
+      eintrag.appendChild(countDiv);
 
       container.appendChild(eintrag);
     });
