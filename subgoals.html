@@ -104,14 +104,17 @@ function renderList(data) {
   let visible = [];
 
   if (notDone.length >= 10) {
-    // Mehr als 10 nicht erledigte → zeige nur die ersten 10
+    // Mehr als 10 nicht erledigte → nur die ersten 10 anzeigen
     visible = notDone.slice(0, 10);
   } else {
-    // Weniger als 10 nicht erledigte → auffüllen mit erledigten, maximal 10
+    // Weniger als 10 offen → offene + erledigte auffüllen, max 10
     const slotsLeft = 10 - notDone.length;
-    visible = notDone.concat(done.slice(0, slotsLeft));
+    // Nimm die letzten `slotsLeft` erledigten Ziele, damit die neuesten sichtbar sind
+    const doneToShow = done.slice(-slotsLeft);
+    visible = notDone.concat(doneToShow);
   }
 
+  // Füge Einträge ins DOM
   visible.forEach(item => {
     const eintrag = document.createElement("div");
     eintrag.className = "eintrag";
@@ -127,7 +130,6 @@ function renderList(data) {
 
     eintrag.appendChild(countDiv);
     eintrag.appendChild(textDiv);
-
     container.appendChild(eintrag);
   });
 }
