@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OBS Subgoal List v5</title>
+<title>OBS Subgoal List v6</title>
 
 <style>
   body {
@@ -30,7 +30,7 @@
   .eintrag {
     display: flex;
     align-items: center;
-    height: calc(90vh / 11);
+    height: calc(90vh / 10);
   }
 
   .count {
@@ -40,7 +40,7 @@
     font-weight: bold;
     color: white;
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
-    margin-right: 20px;
+    margin-right: 10px;
   }
 
   .text {
@@ -106,19 +106,23 @@ function renderList(data) {
   let visible = [];
 
   if (firstLoad) {
-    // Anfang: zeige einfach die ersten 10 Einträge
+    // Anfang: erste 10 Goals anzeigen
     visible = data.slice(0, 10);
     firstLoad = false;
   } else {
     if (notDone.length >= 9) {
-      // letzte erledigte oben + 9 offene
+      // Letzter erledigter oben + 9 offene
       const lastDone = done.length > 0 ? [done[done.length - 1]] : [];
       visible = [...lastDone, ...notDone.slice(0, 9)];
     } else {
-      // weniger als 9 offene -> fülle mit erledigten oberhalb auf
-      const lastDone = done.length > 0 ? done.slice(- (10 - notDone.length)) : [];
-      visible = [...lastDone, ...notDone];
-      visible = visible.slice(-10); // max 10
+      // Weniger als 9 offene → letzten erledigten oben + alle offenen
+      const lastDone = done.length > 0 ? [done[done.length - 1]] : [];
+      const remainingOpen = notDone.slice(0, 9);
+      const additionalDone = done.filter(d => d !== lastDone[0]); // keine Doppelung
+      visible = [...lastDone, ...remainingOpen, ...additionalDone];
+
+      // Maximal 10 Einträge
+      visible = visible.slice(0, 10);
     }
   }
 
@@ -141,9 +145,8 @@ function renderList(data) {
   });
 }
 
-// Fetch alle 10 Sekunden
 fetchSubgoals();
-setInterval(fetchSubgoals, 10000);
+setInterval(fetchSubgoals, 10000); // alle 10 Sekunden aktualisieren
 </script>
 
 </body>
