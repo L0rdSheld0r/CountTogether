@@ -9,6 +9,7 @@
     margin: 0;
     background: transparent;
     font-family: Arial, sans-serif;
+    overflow: hidden;
   }
 
   #anzeige {
@@ -19,12 +20,19 @@
     align-items: center;
   }
 
-  #liste {
+  /* Scrollbereich */
+  #scrollContainer {
     height: 90vh;
+    overflow: hidden;
+    padding-right: 30px;
+  }
+
+  /* Liste */
+  #liste {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    padding-right: 30px;
+    transition: transform 1.2s ease;
   }
 
   .eintrag {
@@ -53,7 +61,6 @@
     overflow: hidden;
   }
 
-  /* erledigte Ziele */
   .done {
     opacity: 0.45;
   }
@@ -68,7 +75,9 @@
 <body>
 
 <div id="anzeige">
-  <div id="liste"></div>
+  <div id="scrollContainer">
+    <div id="liste"></div>
+  </div>
 </div>
 
 <script>
@@ -78,6 +87,9 @@ const SHEET_NAME = "Subgoals";
 const SHEET_URL =
   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
+let fullData = [];
+let firstOpenIndex = 0;
+
 async function fetchSubgoals() {
   try {
     const response = await fetch(SHEET_URL, { cache: "no-store" });
@@ -85,55 +97,77 @@ async function fetchSubgoals() {
     const json = JSON.parse(text.substring(47).slice(0, -2));
 
     const rows = json.table.rows;
-    const container = document.getElementById("liste");
 
-    container.innerHTML = "";
-
-    let data = rows.map(row => ({
+    fullData = rows.map(row => ({
       count: row.c[0] ? row.c[0].v : "",
       text: row.c[1] ? row.c[1].v : "",
       done: row.c[2] ? row.c[2].v : 0
     }));
 
-    let firstOpenIndex = data.findIndex(item => item.done == 0);
+    firstOpenIndex = fullData.findIndex(item => item.done == 0);
     if (firstOpenIndex === -1) firstOpenIndex = 0;
 
-    let visible = data.slice(firstOpenIndex, firstOpenIndex + 10);
-
-    if (visible.length < 10) {
-      let missing = 10 - visible.length;
-      visible = data.slice(firstOpenIndex - missing, firstOpenIndex).concat(visible);
-    }
-
-    visible.forEach(item => {
-      if (item.count === "" && item.text === "") return;
-
-      const eintrag = document.createElement("div");
-      eintrag.className = "eintrag";
-
-      if (item.done == 1) eintrag.classList.add("done");
-
-      const countDiv = document.createElement("div");
-      countDiv.className = "count";
-      countDiv.innerText = item.count;
-
-      const textDiv = document.createElement("div");
-      textDiv.className = "text";
-      textDiv.innerText = item.text;
-
-      eintrag.appendChild(countDiv);
-      eintrag.appendChild(textDiv);
-
-      container.appendChild(eintrag);
-    });
+    renderCurrentView();
 
   } catch (error) {
     console.error("Sheet Load Error:", error);
   }
 }
 
+function renderCurrentView() {
+  const container = document.getElementById("liste");
+  container.innerHTML = "";
+
+  let visible = fullData.slice(firstOpenIndex, firstOpenIndex + 10);
+
+  if (visible.length < 10) {
+    let missing = 10 - visible.length;
+    visible = fullData.slice(firstOpenIndex - missing, firstOpenIndex).concat(visible);
+  }
+
+  visible.forEach(item => {
+    const eintrag = document.createElement("div");
+    eintrag.className = "eintrag";
+
+    if (item.done == 1) eintrag.classList.add("done");
+
+    const countDiv = document.createElement("div");
+    countDiv.className = "count";
+    countDiv.innerText = item.count;
+
+    const textDiv = document.createElement("div");
+    textDiv.className = "text";
+    textDiv.innerText = item.text;
+
+    eintrag.appendChild(countDiv);
+    eintrag.appendChild(textDiv);
+
+    container.appendChild(eintrag);
+  });
+
+  // Scroll zurücksetzen
+  container.style.transform = "translateY(0px)";
+}
+
+function scrollPreview() {
+  const container = document.getElementById("liste");
+
+  const scrollDistance = firstOpenIndex * (window.innerHeight * 0.9 / 10);
+
+  // nach oben scrollen
+  container.style.transform = `translateY(${scrollDistance}px)`;
+
+  // kurz warten und wieder zurück
+  setTimeout(() => {
+    container.style.transform = "translateY(0px)";
+  }, 3500);
+}
+
 fetchSubgoals();
 setInterval(fetchSubgoals, 10000);
+
+/* Einmal pro Minute Scroll-Preview */
+setInterval(scrollPreview, 60000);
 </script>
 
 </body>
