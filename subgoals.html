@@ -30,13 +30,13 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    transition: transform 2s ease;
   }
 
   .eintrag {
     display: flex;
     align-items: center;
     height: calc(90vh / 10);
+    transition: transform 2s ease;
   }
 
   .count {
@@ -69,7 +69,6 @@
   }
 </style>
 </head>
-
 <body>
 
 <div id="anzeige">
@@ -81,39 +80,30 @@
 <script>
 const SHEET_ID = "1qE6LIMwBBoqZOoWxmUrwmM9LTrcDhr2vRBnWWVBehqM";
 const SHEET_NAME = "Subgoals";
-
 const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
 let fullData = [];
 let firstOpenIndex = 0;
 
-// Hilfsfunktion für delay
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+function fetchSubgoals() {
+  fetch(SHEET_URL, { cache: "no-store" })
+    .then(r => r.text())
+    .then(text => {
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const rows = json.table.rows;
 
-async function fetchSubgoals() {
-  try {
-    const response = await fetch(SHEET_URL, { cache: "no-store" });
-    const text = await response.text();
-    const json = JSON.parse(text.substring(47).slice(0, -2));
+      fullData = rows.map(row => ({
+        count: row.c[0] ? row.c[0].v : "",
+        text: row.c[1] ? row.c[1].v : "",
+        done: row.c[2] ? row.c[2].v : 0
+      }));
 
-    const rows = json.table.rows;
+      firstOpenIndex = fullData.findIndex(item => item.done == 0);
+      if (firstOpenIndex === -1) firstOpenIndex = 0;
 
-    fullData = rows.map(row => ({
-      count: row.c[0] ? row.c[0].v : "",
-      text: row.c[1] ? row.c[1].v : "",
-      done: row.c[2] ? row.c[2].v : 0
-    }));
-
-    firstOpenIndex = fullData.findIndex(item => item.done == 0);
-    if (firstOpenIndex === -1) firstOpenIndex = 0;
-
-    renderCurrentView();
-
-  } catch (error) {
-    console.error("Sheet Load Error:", error);
-  }
+      renderCurrentView();
+    })
+    .catch(e => console.error("Sheet Load Error:", e));
 }
 
 function renderCurrentView() {
@@ -121,16 +111,15 @@ function renderCurrentView() {
   container.innerHTML = "";
 
   let visible = fullData.slice(firstOpenIndex, firstOpenIndex + 10);
-
   if (visible.length < 10) {
     let missing = 10 - visible.length;
     visible = fullData.slice(firstOpenIndex - missing, firstOpenIndex).concat(visible);
   }
 
   visible.forEach(item => {
-    const eintrag = document.createElement("div");
-    eintrag.className = "eintrag";
-    if (item.done == 1) eintrag.classList.add("done");
+    const div = document.createElement("div");
+    div.className = "eintrag";
+    if (item.done == 1) div.classList.add("done");
 
     const countDiv = document.createElement("div");
     countDiv.className = "count";
@@ -140,16 +129,16 @@ function renderCurrentView() {
     textDiv.className = "text";
     textDiv.innerText = item.text;
 
-    eintrag.appendChild(countDiv);
-    eintrag.appendChild(textDiv);
-    container.appendChild(eintrag);
+    div.appendChild(countDiv);
+    div.appendChild(textDiv);
+    container.appendChild(div);
   });
 
   container.style.transform = "translateY(0px)";
 }
 
-// scroll Preview Zeile für Zeile
-async function scrollPreview() {
+// sanftes Zeilen-für-Zeilen Scrollen ohne await
+function scrollPreview() {
   const container = document.getElementById("liste");
   const totalLines = container.children.length;
   if (totalLines <= 10) return;
@@ -157,24 +146,23 @@ async function scrollPreview() {
   const lineHeight = window.innerHeight * 0.9 / 10;
   let current = 0;
 
-  while (current < totalLines - 10) {
+  function step() {
+    if (current >= totalLines - 10) {
+      setTimeout(() => container.style.transform = "translateY(0px)", 2000);
+      return;
+    }
     current++;
+    container.style.transition = "transform 2s ease";
     container.style.transform = `translateY(${current * lineHeight}px)`;
-    await delay(2000); // 2 Sekunden pro Zeile
+    setTimeout(step, 2000);
   }
 
-  // kurz stehen bleiben
-  await delay(2000);
-
-  // zurück scrollen
-  container.style.transform = "translateY(0px)";
+  step();
 }
 
 fetchSubgoals();
 setInterval(fetchSubgoals, 10000);
-
-// Scroll Preview alle 5 Minuten
-setInterval(scrollPreview, 30000);
+setInterval(scrollPreview, 30000); // alle 5 Minuten
 </script>
 
 </body>
