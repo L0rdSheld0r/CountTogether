@@ -1,1 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>OBS Subgoal List</title>
 
+<style>
+  body {
+    margin: 0;
+    background: transparent;
+    font-family: Arial, sans-serif;
+  }
+
+  /* Hauptcontainer rechtsbündig */
+  #anzeige {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  /* Liste */
+  #liste {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 15px;
+    padding-right: 40px;
+  }
+
+  /* Einzelne Zeile */
+  .eintrag {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+  }
+
+  /* Zahl */
+  .count {
+    font-size: 100px;
+    font-weight: bold;
+    color: white;
+    text-shadow: 0 0 20px rgba(0,0,0,0.7);
+    min-width: 150px;
+    text-align: right;
+  }
+
+  /* Beschreibung */
+  .text {
+    font-size: 60px;
+    color: white;
+    text-shadow: 0 0 20px rgba(0,0,0,0.7);
+    white-space: nowrap;
+  }
+</style>
+</head>
+
+<body>
+
+<div id="anzeige">
+  <div id="liste"></div>
+</div>
+
+<script>
+const SHEET_ID = "1qE6LIMwBBoqZOoWxmUrwmM9LTrcDhr2vRBnWWVBehqM";
+const SHEET_NAME = "Subgoals";
+
+const SHEET_URL =
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+async function fetchSubgoals() {
+  try {
+    const response = await fetch(SHEET_URL, { cache: "no-store" });
+    const text = await response.text();
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+
+    const rows = json.table.rows;
+    const container = document.getElementById("liste");
+
+    container.innerHTML = "";
+
+    rows.forEach(row => {
+      const countCell = row.c[0];
+      const textCell = row.c[1];
+
+      const count = countCell ? countCell.v : "";
+      const description = textCell ? textCell.v : "";
+
+      if (count === "" && description === "") return;
+
+      const eintrag = document.createElement("div");
+      eintrag.className = "eintrag";
+
+      const countDiv = document.createElement("div");
+      countDiv.className = "count";
+      countDiv.innerText = count;
+
+      const textDiv = document.createElement("div");
+      textDiv.className = "text";
+      textDiv.innerText = description;
+
+      eintrag.appendChild(countDiv);
+      eintrag.appendChild(textDiv);
+
+      container.appendChild(eintrag);
+    });
+
+  } catch (error) {
+    console.error("Sheet Load Error:", error);
+  }
+}
+
+/* Erste Abfrage direkt */
+fetchSubgoals();
+
+/* Danach alle 10 Sekunden aktualisieren */
+setInterval(fetchSubgoals, 10000);
+</script>
+
+</body>
+</html>
