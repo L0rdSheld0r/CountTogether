@@ -30,7 +30,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    transition: transform 2s ease; /* 2 Sekunden pro Scroll */
+    transition: transform 2s ease;
   }
 
   .eintrag {
@@ -82,11 +82,15 @@
 const SHEET_ID = "1qE6LIMwBBoqZOoWxmUrwmM9LTrcDhr2vRBnWWVBehqM";
 const SHEET_NAME = "Subgoals";
 
-const SHEET_URL =
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
 let fullData = [];
 let firstOpenIndex = 0;
+
+// Hilfsfunktion für delay
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function fetchSubgoals() {
   try {
@@ -126,7 +130,6 @@ function renderCurrentView() {
   visible.forEach(item => {
     const eintrag = document.createElement("div");
     eintrag.className = "eintrag";
-
     if (item.done == 1) eintrag.classList.add("done");
 
     const countDiv = document.createElement("div");
@@ -139,45 +142,38 @@ function renderCurrentView() {
 
     eintrag.appendChild(countDiv);
     eintrag.appendChild(textDiv);
-
     container.appendChild(eintrag);
   });
 
-  // Scroll zurücksetzen
   container.style.transform = "translateY(0px)";
 }
 
-// sanftes Scrollen Zeile für Zeile
-function scrollPreview() {
+// scroll Preview Zeile für Zeile
+async function scrollPreview() {
   const container = document.getElementById("liste");
   const totalLines = container.children.length;
+  if (totalLines <= 10) return;
 
-  if (totalLines <= 10) return; // kein Scroll nötig
-
+  const lineHeight = window.innerHeight * 0.9 / 10;
   let current = 0;
-  const lineHeight = window.innerHeight * 0.9 / 10; // Höhe pro Goal
 
-  function stepScroll() {
-    if (current >= totalLines - 10) {
-      // alle durch → kurz stehen, dann zurück
-      setTimeout(() => {
-        container.style.transform = `translateY(0px)`;
-      }, 2000);
-      return;
-    }
-
+  while (current < totalLines - 10) {
     current++;
     container.style.transform = `translateY(${current * lineHeight}px)`;
-    setTimeout(stepScroll, 2000); // 2 Sekunden pro Schritt
+    await delay(2000); // 2 Sekunden pro Zeile
   }
 
-  stepScroll();
+  // kurz stehen bleiben
+  await delay(2000);
+
+  // zurück scrollen
+  container.style.transform = "translateY(0px)";
 }
 
 fetchSubgoals();
 setInterval(fetchSubgoals, 10000);
 
-// Scroll-Preview alle 5 Minuten
+// Scroll Preview alle 5 Minuten
 setInterval(scrollPreview, 30000);
 </script>
 
