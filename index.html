@@ -57,6 +57,8 @@ let targetGoal = 0;
 let animatingCounter = false;
 let animatingGoal = false;
 
+document.getElementById("counter").innerText = currentCounter;
+  
 function animateCounter() {
   if (currentCounter === targetCounter) {
     animatingCounter = false;
@@ -81,7 +83,7 @@ function animateCounter() {
 }
 
 function updateCounter(newValue) {
-  if (newValue === targetCounter && currentCounter !== 0) return;
+  if (newValue === targetCounter) return;
 
   targetCounter = newValue;
 
