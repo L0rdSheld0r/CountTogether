@@ -103,14 +103,13 @@ function renderList(data) {
 
   let visible = [];
 
-  if (notDone.length <= 10) {
-    // Weniger oder gleich 10 nicht erledigte → auffüllen mit erledigten
-    visible = notDone.concat(done.slice(0, 10 - notDone.length));
-  } else {
-    // Mehr als 10 nicht erledigte → die ersten 10 nicht erledigten
+  if (notDone.length >= 10) {
+    // Mehr als 10 nicht erledigte → zeige nur die ersten 10
     visible = notDone.slice(0, 10);
-    // zusätzlich den letzten erledigten ganz oben, falls vorhanden
-    if (done.length > 0) visible.unshift(done[done.length - 1]);
+  } else {
+    // Weniger als 10 nicht erledigte → auffüllen mit erledigten, maximal 10
+    const slotsLeft = 10 - notDone.length;
+    visible = notDone.concat(done.slice(0, slotsLeft));
   }
 
   visible.forEach(item => {
