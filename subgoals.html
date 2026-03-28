@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OBS Subgoal List v0.10</title>
+<title>OBS Subgoal List v0.11</title>
 
 <style>
 body {
@@ -40,7 +40,7 @@ body {
     font-weight: bold;
     color: white;
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
-    margin-right: 20px; /* Abstand Zahl zu Text */
+    margin-right: 20px;
 }
 
 .text {
@@ -105,31 +105,32 @@ function renderList(data) {
     let visible = [];
 
     if (firstLoad) {
-        // Anfang: zeige die ersten 10
+        // Anfang: die ersten 10 anzeigen
         visible = data.slice(0, 10);
         firstLoad = false;
     } else {
         if (done.length === 0) {
-            // Kein erledigtes Ziel, zeige einfach bis zu 10 offene
+            // Kein erledigtes Ziel, einfach bis zu 10 offene
             visible = notDone.slice(0, 10);
         } else {
-            // Es gibt erledigte Ziele
-            const lastDone = done[done.length - 1]; // letzter erledigter immer oben
+            // Letztes erledigtes Subgoal oben
+            const lastDone = done[done.length - 1];
+            visible.push(lastDone);
+
+            // Berechne, wie viele offene nachfolgen können
             const maxOpen = 9;
             const openToShow = notDone.slice(0, maxOpen);
-            
-            visible = [lastDone, ...openToShow];
+            visible.push(...openToShow);
 
-            // Wenn weniger als 9 offene vorhanden, fülle unten weitere erledigte auf
-            if (openToShow.length < maxOpen) {
-                const remainingSlots = 10 - visible.length;
+            // Falls weniger als 9 offene, füge vorher erledigte oben nach dem letzten erledigten ein
+            const remainingSlots = 10 - visible.length;
+            if (remainingSlots > 0) {
                 const additionalDone = done.slice(0, done.length - 1).slice(-remainingSlots);
-                visible = [...visible, ...additionalDone];
+                visible = [lastDone, ...additionalDone, ...openToShow];
             }
         }
     }
 
-    // Einträge ins DOM
     visible.forEach(item => {
         const eintrag = document.createElement("div");
         eintrag.className = "eintrag";
@@ -150,7 +151,7 @@ function renderList(data) {
 }
 
 fetchSubgoals();
-setInterval(fetchSubgoals, 10000); // alle 10 Sekunden
+setInterval(fetchSubgoals, 10000);
 </script>
 </body>
 </html>
