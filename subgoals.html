@@ -2,48 +2,48 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>OBS Subgoal List v0.9</title>
+<title>OBS Subgoal List v0.10</title>
 
 <style>
-  body {
+body {
     margin: 0;
     background: transparent;
     font-family: Arial, sans-serif;
-  }
+}
 
-  #anzeige {
+#anzeige {
     width: 100%;
     height: 100vh;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-  }
+}
 
-  #liste {
+#liste {
     height: 90vh;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     padding-right: 30px;
-  }
+}
 
-  .eintrag {
+.eintrag {
     display: flex;
     align-items: center;
     height: calc(90vh / 11);
-  }
+}
 
-  .count {
+.count {
     width: 110px;
     text-align: right;
     font-size: 4.5vh;
     font-weight: bold;
     color: white;
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
-    margin-right: 20px;
-  }
+    margin-right: 20px; /* Abstand Zahl zu Text */
+}
 
-  .text {
+.text {
     width: 520px;
     text-align: left;
     font-size: 4.2vh;
@@ -51,21 +51,20 @@
     text-shadow: 0 0 15px rgba(0,0,0,0.7);
     white-space: nowrap;
     overflow: hidden;
-  }
+}
 
-  .done {
+.done {
     opacity: 0.45;
-  }
+}
 
-  .done .count,
-  .done .text {
+.done .count,
+.done .text {
     text-decoration: line-through;
-  }
+}
 </style>
 </head>
 
 <body>
-
 <div id="anzeige">
   <div id="liste"></div>
 </div>
@@ -78,76 +77,80 @@ const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tq
 let firstLoad = true;
 
 async function fetchSubgoals() {
-  try {
-    const response = await fetch(SHEET_URL, { cache: "no-store" });
-    const text = await response.text();
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-    const rows = json.table.rows;
+    try {
+        const response = await fetch(SHEET_URL, { cache: "no-store" });
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47).slice(0, -2));
+        const rows = json.table.rows;
 
-    const fullData = rows.map(row => ({
-      count: row.c[0] ? row.c[0].v : "",
-      text: row.c[1] ? row.c[1].v : "",
-      done: row.c[2] ? row.c[2].v : 0
-    }));
+        const fullData = rows.map(row => ({
+            count: row.c[0] ? row.c[0].v : "",
+            text: row.c[1] ? row.c[1].v : "",
+            done: row.c[2] ? row.c[2].v : 0
+        }));
 
-    renderList(fullData);
-  } catch (error) {
-    console.error("Sheet Load Error:", error);
-  }
+        renderList(fullData);
+    } catch (error) {
+        console.error("Sheet Load Error:", error);
+    }
 }
 
 function renderList(data) {
-  const container = document.getElementById("liste");
-  container.innerHTML = "";
+    const container = document.getElementById("liste");
+    container.innerHTML = "";
 
-  const notDone = data.filter(item => item.done == 0);
-  const done = data.filter(item => item.done == 1);
+    const notDone = data.filter(item => item.done == 0);
+    const done = data.filter(item => item.done == 1);
 
-  let visible = [];
+    let visible = [];
 
-  if (firstLoad) {
-    // Anfang: erste 10 Goals anzeigen
-    visible = data.slice(0, 10);
-    firstLoad = false;
-  } else {
-    if (notDone.length >= 10 || done.length === 0) {
-        // Kein erledigtes vorhanden oder genug offene → einfach die ersten 10 offenen nehmen
-        visible = notDone.slice(0, 10);
-    } else if (notDone.length >= 9) {
-        // Letzter erledigter oben + 9 offene
-        const lastDone = [done[done.length - 1]];
-        visible = [...lastDone, ...notDone.slice(0, 9)];
+    if (firstLoad) {
+        // Anfang: zeige die ersten 10
+        visible = data.slice(0, 10);
+        firstLoad = false;
     } else {
-        // Weniger als 9 offene → letzten erledigten oben + offene + weitere erledigte
-        const lastDone = [done[done.length - 1]];
-        const remainingOpen = notDone.slice(0, 9);
-        const additionalDone = done.filter(d => d !== lastDone[0]);
-        visible = [...lastDone, ...remainingOpen, ...additionalDone].slice(0, 10);
+        if (done.length === 0) {
+            // Kein erledigtes Ziel, zeige einfach bis zu 10 offene
+            visible = notDone.slice(0, 10);
+        } else {
+            // Es gibt erledigte Ziele
+            const lastDone = done[done.length - 1]; // letzter erledigter immer oben
+            const maxOpen = 9;
+            const openToShow = notDone.slice(0, maxOpen);
+            
+            visible = [lastDone, ...openToShow];
+
+            // Wenn weniger als 9 offene vorhanden, fülle unten weitere erledigte auf
+            if (openToShow.length < maxOpen) {
+                const remainingSlots = 10 - visible.length;
+                const additionalDone = done.slice(0, done.length - 1).slice(-remainingSlots);
+                visible = [...visible, ...additionalDone];
+            }
+        }
     }
-  }
 
-  visible.forEach(item => {
-    const eintrag = document.createElement("div");
-    eintrag.className = "eintrag";
-    if (item.done == 1) eintrag.classList.add("done");
+    // Einträge ins DOM
+    visible.forEach(item => {
+        const eintrag = document.createElement("div");
+        eintrag.className = "eintrag";
+        if (item.done == 1) eintrag.classList.add("done");
 
-    const countDiv = document.createElement("div");
-    countDiv.className = "count";
-    countDiv.innerText = item.count;
+        const countDiv = document.createElement("div");
+        countDiv.className = "count";
+        countDiv.innerText = item.count;
 
-    const textDiv = document.createElement("div");
-    textDiv.className = "text";
-    textDiv.innerText = item.text;
+        const textDiv = document.createElement("div");
+        textDiv.className = "text";
+        textDiv.innerText = item.text;
 
-    eintrag.appendChild(countDiv);
-    eintrag.appendChild(textDiv);
-    container.appendChild(eintrag);
-  });
+        eintrag.appendChild(countDiv);
+        eintrag.appendChild(textDiv);
+        container.appendChild(eintrag);
+    });
 }
 
 fetchSubgoals();
-setInterval(fetchSubgoals, 10000); // alle 10 Sekunden aktualisieren
+setInterval(fetchSubgoals, 10000); // alle 10 Sekunden
 </script>
-
 </body>
 </html>
